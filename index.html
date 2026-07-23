@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charter Oak CC — Dashboard</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Calibri, Arial, sans-serif;
+    background: #f4f5f7;
+    color: #000;
+    font-size: 14px;
+  }
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #1F4E78;
+    padding: 10px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  nav button {
+    font-family: Calibri, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: #1F4E78;
+    background: #fff;
+    border: 1px solid #16324f;
+    border-radius: 4px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  nav button.active {
+    background: #D9EAD3;
+  }
+  nav button:hover {
+    background: #EAF1F8;
+  }
+  main {
+    padding: 24px;
+  }
+  .tabpanel { display: none; }
+  .tabpanel.active { display: block; }
+  .sheet {
+    max-width: 900px;
+    margin: 0 auto 28px auto;
+    background: #fff;
+    border: 1px solid #cccccc;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  td, th {
+    border: 1px solid #d0d0d0;
+    padding: 6px 10px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .title-band td {
+    background: #1F4E78;
+    color: #FFFFFF;
+    font-weight: bold;
+    border: 1px solid #1F4E78;
+  }
+  .title-band .club { font-size: 16px; }
+  .title-band .sub { font-size: 13px; font-weight: bold; }
+  .header-row td, .header-row th {
+    background: #D9EAD3;
+    font-weight: bold;
+  }
+  .header-row th.sortable { cursor: pointer; user-select: none; }
+  .header-row th.sortable:hover { background: #c3e0bb; }
+  .num { text-align: center; }
+  .num-wide { text-align: center; }
+  .section-gap td {
+    border: none;
+    background: #fff;
+    padding: 10px 10px 2px 10px;
+  }
+  .meta td {
+    border: none;
+    background: #fff;
+    font-size: 12px;
+    color: #555;
+    font-style: italic;
+    padding: 4px 10px 10px 10px;
+  }
+  .exec-summary-title td {
+    font-weight: bold;
+    border: 1px solid #d0d0d0;
+  }
+  .exec-summary-item td {
+    border-left: 1px solid #d0d0d0;
+    border-right: 1px solid #d0d0d0;
+    border-bottom: 1px solid #d0d0d0;
+    border-top: none;
+  }
+  .databar-cell { position: relative; }
+  .databar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: #9FC5E8;
+    z-index: 0;
+  }
+  .databar-cell span { position: relative; z-index: 1; }
+  .status-note td {
+    font-size: 12px;
+    font-style: italic;
+    color: #555;
+    border: 1px solid #d0d0d0;
+  }
+  .notes td {
+    border: none;
+    background: #fff;
+    font-size: 11px;
+    color: #666;
+    padding: 4px 10px;
+  }
+  .scroll-table { max-height: 640px; overflow-y: auto; border: 1px solid #d0d0d0; border-top: none; }
+  .scroll-table table { border: none; }
+  .scroll-table .header-row th { position: sticky; top: 0; }
+
+  #password-gate {
+    position: fixed;
+    inset: 0;
+    background: #1F4E78;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Calibri, Arial, sans-serif;
+  }
+  #password-gate .gate-box {
+    background: #fff;
+    border-radius: 6px;
+    padding: 32px 36px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  }
+  #password-gate h2 {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    color: #1F4E78;
+  }
+  #password-gate p {
+    margin: 0 0 18px 0;
+    font-size: 13px;
+    color: #555;
+  }
+  #password-gate input[type="password"] {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  #password-gate button {
+    width: 100%;
+    padding: 9px;
+    font-size: 14px;
+    font-weight: bold;
+    background: #1F4E78;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #password-gate button:hover { background: #16324f; }
+  #password-gate .gate-error {
+    color: #b00020;
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 16px;
+  }
+  #site-content { display: none; }
+</style>
+</head>
+<body>
+
+<div id="password-gate">
+  <div class="gate-box">
+    <h2>Charter Oak CC</h2>
+    <p>Staff Dashboard &mdash; enter password to continue</p>
+    <input type="password" id="gate-password" placeholder="Password" autofocus>
+    <button onclick="checkGatePassword()">Enter</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
+
+<div id="site-content">
+<nav id="tabnav">
+  <button data-tab="tab-live" class="active" onclick="showTab('tab-live')">Upcoming Weekend Bookings</button>
+  <button data-tab="tab-saturday" onclick="showTab('tab-saturday')">Saturday, Jul 25</button>
+  <button data-tab="tab-sunday" onclick="showTab('tab-sunday')">Sunday, Jul 26</button>
+  <button data-tab="tab-snapshot-saturday" onclick="showTab('tab-snapshot-saturday')">Sat Snapshot</button>
+  <button data-tab="tab-snapshot-sunday" onclick="showTab('tab-snapshot-sunday')">Sun Snapshot</button>
+  <button data-tab="tab-friday" onclick="showTab('tab-friday')">Friday Summary</button>
+  <button data-tab="tab-season" onclick="showTab('tab-season')">Season Summary</button>
+  <button data-tab="tab-members" onclick="showTab('tab-members')">Member Round Totals</button>
+  <button data-tab="tab-category" onclick="showTab('tab-category')">Category Summary</button>
+  <button data-tab="tab-guests" onclick="showTab('tab-guests')">Guest Summary</button>
+  <button data-tab="tab-sources" onclick="showTab('tab-sources')">Source Reports</button>
+  <button data-tab="tab-notes" onclick="showTab('tab-notes')">Notes</button>
+</nav>
+
+<main>
+
+<div id="tab-live" class="tabpanel active">
+<div class="sheet">
+<table>
+  <tr class="title-band">
+    <td colspan="2" class="club">CHARTER OAK COUNTRY CLUB</td>
+  </tr>
+  <tr class="title-band">
+    <td colspan="2" class="sub">Upcoming Weekend Bookings — Sat, Jul 25 &amp; Sun, Jul 26, 2026</td>
+  </tr>
+  <tr class="meta">
+    <td colspan="2">Source: charteroakcc.mfteetimes.com admin tee sheet &nbsp;|&nbsp; Last refreshed: July 22, 2026 — 8:13 AM ET (auto)</td>
+  </tr>
+
+  <tr class="header-row">
+    <td>Metric</td>
+    <td class="num">Value</td>
+  </tr>
+  <tr><td>Tee Times Booked — Saturday</td><td class="num">53 / 73</td></tr>
+  <tr><td>Tee Times Booked — Sunday</td><td class="num">52 / 73</td></tr>
+  <tr><td>Tee Times Booked — Weekend Total</td><td class="num">105 / 146</td></tr>
+  <tr><td>Total Players — Saturday</td><td class="num">181</td></tr>
+  <tr><td>Total Players — Sunday</td><td class="num">167</td></tr>
+  <tr><td>Total Players — Weekend</td><td class="num">348</td></tr>
+  <tr><td>Members</td><td class="num">294</td></tr>
+  <tr><td>Guests</td><td class="num">54</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Playing Time Breakdown</td>
+    <td class="num">Players</td>
+  </tr>
+  <tr><td>Before 8:00 AM</td><td class="num">47</td></tr>
+  <tr><td>8:00–9:00 AM</td><td class="num">36</td></tr>
+  <tr><td>9:00–10:00 AM</td><td class="num">45</td></tr>
+  <tr><td>10:00–11:00 AM</td><td class="num">41</td></tr>
+  <tr><td>11:00 AM–12:00 PM</td><td class="num">45</td></tr>
+  <tr><td>12:00–1:00 PM</td><td class="num">43</td></tr>
+  <tr><td>1:00–2:00 PM</td><td class="num">29</td></tr>
+  <tr><td>2:00–3:00 PM</td><td class="num">20</td></tr>
+  <tr><td>3:00–4:00 PM</td><td class="num">31</td></tr>
+  <tr><td>4:00–5:00 PM</td><td class="num">11</td></tr>
+  <tr><td><em>Subtotal — 8:00 AM–11:00 AM</em></td><td class="num"><em>122</em></td></tr>
+  <tr><td><em>Subtotal — After 1:00 PM</em></td><td class="num"><em>91</em></td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Category</td>
+    <td class="num">Golfers</td>
+  </tr>
+  <tr><td>A Member</td><td class="num">120</td></tr>
+  <tr><td>Individual Golf Member</td><td class="num">64</td></tr>
+  <tr><td>Guest</td><td class="num">54</td></tr>
+  <tr><td>A Member – Spouse</td><td class="num">46</td></tr>
+  <tr><td>Jr Executive Member</td><td class="num">29</td></tr>
+  <tr><td>Junior Class 18+</td><td class="num">8</td></tr>
+  <tr><td>Jr Executive Member – Spouse</td><td class="num">7</td></tr>
+  <tr><td>Junior Class 4-8</td><td class="num">5</td></tr>
+  <tr><td>Junior Class 12-15</td><td class="num">3</td></tr>
+  <tr><td>Charter Member – Spouse</td><td class="num">2</td></tr>
+  <tr><td>Officer</td><td class="num">2</td></tr>
+  <tr><td>Junior Class 9-11</td><td class="num">2</td></tr>
+  <tr><td>Charter Member</td><td class="num">2</td></tr>
+  <tr><td>Junior Class 16-17</td><td class="num">2</td></tr>
+  <tr><td>Founder Member</td><td class="num">1</td></tr>
+  <tr><td>Founder Member – Spouse</td><td class="num">1</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="exec-summary-title"><td colspan="2">Executive Summary</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• 105 of 146 tee times booked so far for the upcoming weekend (348 total players): 53/73 Saturday, 52/73 Sunday.</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• Saturday is currently running ahead of Sunday — 181 vs. 167 players booked.</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• Members make up 84% of bookings (294), guests 16% (54).</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• 8:00–11:00 AM is the busiest window booked so far, with 122 players.</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• Note: these are bookings made so far — Saturday is 3 days out, Sunday 4 days out, and both will keep filling in before the weekend.</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-saturday" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band">
+    <td colspan="2" class="club">CHARTER OAK COUNTRY CLUB</td>
+  </tr>
+  <tr class="title-band">
+    <td colspan="2" class="sub">Saturday, July 25, 2026 — Bookings So Far</td>
+  </tr>
+  <tr class="meta">
+    <td colspan="2">Source: charteroakcc.mfteetimes.com admin tee sheet &nbsp;|&nbsp; Last refreshed: July 22, 2026 — 8:13 AM ET (auto)</td>
+  </tr>
+
+  <tr class="header-row">
+    <td>Metric</td>
+    <td class="num">Value</td>
+  </tr>
+  <tr><td>Tee Times Booked</td><td class="num">53 / 73</td></tr>
+  <tr><td>Total Players</td><td class="num">181</td></tr>
+  <tr><td>Members</td><td class="num">152</td></tr>
+  <tr><td>Guests</td><td class="num">29</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Playing Time Breakdown</td>
+    <td class="num">Players</td>
+  </tr>
+  <tr><td>Before 8:00 AM</td><td class="num">29</td></tr>
+  <tr><td>8:00–9:00 AM</td><td class="num">15</td></tr>
+  <tr><td>9:00–10:00 AM</td><td class="num">24</td></tr>
+  <tr><td>10:00–11:00 AM</td><td class="num">20</td></tr>
+  <tr><td>11:00 AM–12:00 PM</td><td class="num">24</td></tr>
+  <tr><td>12:00–1:00 PM</td><td class="num">21</td></tr>
+  <tr><td>1:00–2:00 PM</td><td class="num">16</td></tr>
+  <tr><td>2:00–3:00 PM</td><td class="num">9</td></tr>
+  <tr><td>3:00–4:00 PM</td><td class="num">18</td></tr>
+  <tr><td>4:00–5:00 PM</td><td class="num">5</td></tr>
+  <tr><td><em>Subtotal — 8:00 AM–11:00 AM</em></td><td class="num"><em>59</em></td></tr>
+  <tr><td><em>Subtotal — After 1:00 PM</em></td><td class="num"><em>48</em></td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Category</td>
+    <td class="num">Golfers</td>
+  </tr>
+  <tr><td>A Member</td><td class="num">57</td></tr>
+  <tr><td>Individual Golf Member</td><td class="num">35</td></tr>
+  <tr><td>Guest</td><td class="num">29</td></tr>
+  <tr><td>A Member – Spouse</td><td class="num">27</td></tr>
+  <tr><td>Jr Executive Member</td><td class="num">15</td></tr>
+  <tr><td>Junior Class 18+</td><td class="num">3</td></tr>
+  <tr><td>Jr Executive Member – Spouse</td><td class="num">3</td></tr>
+  <tr><td>Junior Class 4-8</td><td class="num">3</td></tr>
+  <tr><td>Charter Member – Spouse</td><td class="num">2</td></tr>
+  <tr><td>Officer</td><td class="num">2</td></tr>
+  <tr><td>Junior Class 12-15</td><td class="num">2</td></tr>
+  <tr><td>Junior Class 9-11</td><td class="num">2</td></tr>
+  <tr><td>Charter Member</td><td class="num">1</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="exec-summary-title"><td colspan="2">Executive Summary</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• 53 of 73 tee times booked so far for Saturday (181 total players).</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• Members make up 84% of bookings (152), guests 16% (29).</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• 8:00–11:00 AM is the busiest window booked so far, with 59 players.</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• Note: this is bookings made so far — Saturday is 3 days out and will keep filling in.</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-sunday" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band">
+    <td colspan="2" class="club">CHARTER OAK COUNTRY CLUB</td>
+  </tr>
+  <tr class="title-band">
+    <td colspan="2" class="sub">Sunday, July 26, 2026 — Bookings So Far</td>
+  </tr>
+  <tr class="meta">
+    <td colspan="2">Source: charteroakcc.mfteetimes.com admin tee sheet &nbsp;|&nbsp; Last refreshed: July 22, 2026 — 8:13 AM ET (auto)</td>
+  </tr>
+
+  <tr class="header-row">
+    <td>Metric</td>
+    <td class="num">Value</td>
+  </tr>
+  <tr><td>Tee Times Booked</td><td class="num">52 / 73</td></tr>
+  <tr><td>Total Players</td><td class="num">167</td></tr>
+  <tr><td>Members</td><td class="num">142</td></tr>
+  <tr><td>Guests</td><td class="num">25</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Playing Time Breakdown</td>
+    <td class="num">Players</td>
+  </tr>
+  <tr><td>Before 8:00 AM</td><td class="num">18</td></tr>
+  <tr><td>8:00–9:00 AM</td><td class="num">21</td></tr>
+  <tr><td>9:00–10:00 AM</td><td class="num">21</td></tr>
+  <tr><td>10:00–11:00 AM</td><td class="num">21</td></tr>
+  <tr><td>11:00 AM–12:00 PM</td><td class="num">21</td></tr>
+  <tr><td>12:00–1:00 PM</td><td class="num">22</td></tr>
+  <tr><td>1:00–2:00 PM</td><td class="num">13</td></tr>
+  <tr><td>2:00–3:00 PM</td><td class="num">11</td></tr>
+  <tr><td>3:00–4:00 PM</td><td class="num">13</td></tr>
+  <tr><td>4:00–5:00 PM</td><td class="num">6</td></tr>
+  <tr><td><em>Subtotal — 8:00 AM–11:00 AM</em></td><td class="num"><em>63</em></td></tr>
+  <tr><td><em>Subtotal — After 1:00 PM</em></td><td class="num"><em>43</em></td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Category</td>
+    <td class="num">Golfers</td>
+  </tr>
+  <tr><td>A Member</td><td class="num">63</td></tr>
+  <tr><td>Individual Golf Member</td><td class="num">29</td></tr>
+  <tr><td>Guest</td><td class="num">25</td></tr>
+  <tr><td>A Member – Spouse</td><td class="num">19</td></tr>
+  <tr><td>Jr Executive Member</td><td class="num">14</td></tr>
+  <tr><td>Junior Class 18+</td><td class="num">5</td></tr>
+  <tr><td>Jr Executive Member – Spouse</td><td class="num">4</td></tr>
+  <tr><td>Junior Class 16-17</td><td class="num">2</td></tr>
+  <tr><td>Junior Class 4-8</td><td class="num">2</td></tr>
+  <tr><td>Charter Member</td><td class="num">1</td></tr>
+  <tr><td>Founder Member</td><td class="num">1</td></tr>
+  <tr><td>Founder Member – Spouse</td><td class="num">1</td></tr>
+  <tr><td>Junior Class 12-15</td><td class="num">1</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="exec-summary-title"><td colspan="2">Executive Summary</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• 52 of 73 tee times booked so far for Sunday (167 total players).</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• Members make up 85% of bookings (142), guests 15% (25).</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• 8:00–11:00 AM is the busiest window booked so far, with 63 players.</td></tr>
+  <tr class="exec-summary-item"><td colspan="2">• Note: this is bookings made so far — Sunday is 4 days out and will keep filling in.</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-snapshot-saturday" class="tabpanel">
+<div class="sheet" style="max-width:900px;">
+<table>
+  <tr class="title-band">
+    <td colspan="7" class="club">CHARTER OAK COUNTRY CLUB</td>
+  </tr>
+  <tr class="title-band">
+    <td colspan="7" class="sub">Saturday Tee Sheet Snapshot &mdash; July 25, 2026</td>
+  </tr>
+  <tr class="meta">
+    <td colspan="7">As of 9:50 AM &ndash; Wednesday, July 22, 2026</td>
+  </tr>
+  <tr>
+    <td colspan="7" style="padding:8px 10px 12px 10px; font-size:13px; color:#333; border:none;">This report provides a daily snapshot of tee sheet demand for Saturday, July 25 and highlights the limited availability remaining during our highest-demand hours.</td>
+  </tr>
+
+  <tr class="header-row"><td>6-Day Trend</td><td class="num">Mon, Jul 20</td><td class="num">Tue, Jul 21</td><td class="num">Wed, Jul 22</td><td class="num">Thu, Jul 23</td><td class="num">Fri, Jul 24</td><td class="num">Sat, Jul 25</td></tr>
+  <tr><td>Players Booked</td><td class="num">156</td><td class="num">174</td><td class="num">182</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+  <tr><td>Completely Open Tee Times</td><td class="num">29</td><td class="num">23</td><td class="num">19</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+  <tr><td>Golfers Scheduled Before 7:30 AM</td><td class="num">15</td><td class="num">18</td><td class="num">19</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+
+  <tr class="section-gap"><td colspan="7">&nbsp;</td></tr>
+
+  <tr class="header-row"><td colspan="7">Early Morning Demand (Before 7:30 AM)</td></tr>
+  <tr class="header-row"><td>&nbsp;</td><td class="num-wide" colspan="6">Today</td></tr>
+  <tr><td>Golfers Playing Before 7:30 AM</td><td class="num-wide" colspan="6">19</td></tr>
+  <tr><td>Remaining Open Player Spots</td><td class="num-wide" colspan="6">5</td></tr>
+
+  <tr class="section-gap"><td colspan="7">&nbsp;</td></tr>
+
+  <tr class="header-row"><td colspan="7">Prime-Time Availability (8:00 AM &ndash; 11:00 AM)</td></tr>
+  <tr>
+    <td colspan="7" style="padding:6px 10px; font-size:13px; color:#333; border:none;">This continues to be the highest-demand period of the day.</td>
+  </tr>
+  <tr class="header-row"><td>&nbsp;</td><td class="num-wide" colspan="6">Today</td></tr>
+  <tr><td>Tee Times in Window</td><td class="num-wide" colspan="6">18</td></tr>
+  <tr><td>Completely Open Tee Times</td><td class="num-wide" colspan="6">2</td></tr>
+  <tr><td>Open Player Spots Remaining</td><td class="num-wide" colspan="6">13</td></tr>
+
+  <tr class="section-gap"><td colspan="7">&nbsp;</td></tr>
+
+  <tr class="exec-summary-title"><td colspan="7">Key Observations</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">As of Wednesday, July 22 at 9:50 AM, 182 golfers are booked for Saturday, July 25 &mdash; up from 174 the day before.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">There are 19 completely open tee times remaining, but nearly all of them fall outside the prime morning hours.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">Saturday has 19 golfers scheduled before 7:30 AM, leaving only 5 available player spots in the first six tee times.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">Between 8:00 AM and 11:00 AM, Saturday has two completely open tee times &mdash; 8:00 AM and 8:10 AM. Sixteen other tee times in that window are full or nearly full, leaving only 13 individual player spots across the entire prime window.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">The data continues to support what we've observed throughout the season: the issue is not the total number of tee times available, but the intense demand for weekend morning tee times. While afternoon inventory remains, members seeking to play between 8:00 AM and 11:00 AM have very limited options three days out.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">This snapshot reinforces that Saturday morning demand continues to outpace supply, particularly during the club's most desirable playing hours.</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-snapshot-sunday" class="tabpanel">
+<div class="sheet" style="max-width:900px;">
+<table>
+  <tr class="title-band">
+    <td colspan="7" class="club">CHARTER OAK COUNTRY CLUB</td>
+  </tr>
+  <tr class="title-band">
+    <td colspan="7" class="sub">Sunday Tee Sheet Snapshot &mdash; July 26, 2026</td>
+  </tr>
+  <tr class="meta">
+    <td colspan="7">As of 9:50 AM &ndash; Wednesday, July 22, 2026</td>
+  </tr>
+  <tr>
+    <td colspan="7" style="padding:8px 10px 12px 10px; font-size:13px; color:#333; border:none;">This report provides a daily snapshot of tee sheet demand for Sunday, July 26 and highlights the limited availability remaining during our highest-demand hours.</td>
+  </tr>
+
+  <tr class="header-row"><td>6-Day Trend</td><td class="num">Mon, Jul 20</td><td class="num">Tue, Jul 21</td><td class="num">Wed, Jul 22</td><td class="num">Thu, Jul 23</td><td class="num">Fri, Jul 24</td><td class="num">Sat, Jul 25</td></tr>
+  <tr><td>Players Booked</td><td class="num">132</td><td class="num">150</td><td class="num">168</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+  <tr><td>Completely Open Tee Times</td><td class="num">33</td><td class="num">26</td><td class="num">19</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+  <tr><td>Golfers Scheduled Before 7:30 AM</td><td class="num">9</td><td class="num">11</td><td class="num">13</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+
+  <tr class="section-gap"><td colspan="7">&nbsp;</td></tr>
+
+  <tr class="header-row"><td colspan="7">Early Morning Demand (Before 7:30 AM)</td></tr>
+  <tr class="header-row"><td>&nbsp;</td><td class="num" colspan="6">Today</td></tr>
+  <tr><td>Golfers Playing Before 7:30 AM</td><td class="num" colspan="6">13</td></tr>
+  <tr><td>Remaining Open Player Spots</td><td class="num" colspan="6">11</td></tr>
+
+  <tr class="section-gap"><td colspan="7">&nbsp;</td></tr>
+
+  <tr class="header-row"><td colspan="7">Prime-Time Availability (8:00 AM &ndash; 11:00 AM)</td></tr>
+  <tr>
+    <td colspan="7" style="padding:6px 10px; font-size:13px; color:#333; border:none;">This continues to be the highest-demand period of the day.</td>
+  </tr>
+  <tr class="header-row"><td>&nbsp;</td><td class="num" colspan="6">Today</td></tr>
+  <tr><td>Tee Times in Window</td><td class="num" colspan="6">18</td></tr>
+  <tr><td>Completely Open Tee Times</td><td class="num" colspan="6">0</td></tr>
+  <tr><td>Open Player Spots Remaining</td><td class="num" colspan="6">9</td></tr>
+
+  <tr class="section-gap"><td colspan="7">&nbsp;</td></tr>
+
+  <tr class="exec-summary-title"><td colspan="7">Key Observations</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">As of Wednesday, July 22 at 9:50 AM, 168 golfers are booked for Sunday, July 26 &mdash; up from 150 the day before.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">There are 19 completely open tee times remaining, but nearly all of them fall outside the prime morning hours.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">Sunday has 13 golfers scheduled before 7:30 AM, with 11 player openings remaining. The 6:50 AM and 7:20 AM tee times are still completely open.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">Sunday's 8:00 AM&ndash;11:00 AM window is now completely sold out of open tee times — 12 groups are full foursomes and the other six have only 9 individual openings remaining between them.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">The data continues to support what we've observed throughout the season: the issue is not the total number of tee times available, but the intense demand for weekend morning tee times. While afternoon inventory remains, members seeking to play between 8:00 AM and 11:00 AM have very limited options four days out.</td></tr>
+  <tr class="exec-summary-item"><td colspan="7">This snapshot reinforces that Sunday morning demand continues to outpace supply, particularly during the club's most desirable playing hours.</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-friday" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band">
+    <td colspan="8" class="club">CHARTER OAK COUNTRY CLUB</td>
+  </tr>
+  <tr class="title-band">
+    <td colspan="8" class="sub">Friday Summary — May 1 – July 17, 2026 (11 Report Dates)</td>
+  </tr>
+  <tr class="meta">
+    <td colspan="8">Source: 11 uploaded Charter Oak CC tee sheet PDFs (Fri, May 1 – Fri, Jul 17, 2026), parsed directly and checksummed against each PDF's stated player count &nbsp;|&nbsp; No tee sheet exists for Friday, June 26, 2026 due to the Invitational Tournament held that day. &nbsp;|&nbsp; Guests = Guest, Family Guest, Comp, Replay Guest, Weekday Guest, Gift Comp, and Reciprocal categories combined. &nbsp;|&nbsp; Weather: Hudson, MA historical conditions, high/low for the day and sky condition during midday play hours (~10 AM&ndash;3 PM), via timeanddate.com.</td>
+  </tr>
+
+  <tr class="header-row">
+    <td colspan="7">Metric</td>
+    <td class="num">Value</td>
+  </tr>
+  <tr><td colspan="7">Report Dates</td><td class="num">11</td></tr>
+  <tr><td colspan="7">Total Players</td><td class="num">2,097</td></tr>
+  <tr><td colspan="7">Average Players per Friday</td><td class="num">190.6</td></tr>
+  <tr><td colspan="7">Tee Times Booked (Total)</td><td class="num">679 / 755</td></tr>
+  <tr><td colspan="7">Members</td><td class="num">1,741 (83.0%)</td></tr>
+  <tr><td colspan="7">Guests</td><td class="num">356 (17.0%)</td></tr>
+  <tr><td colspan="7">Groups with 3 Guests, 11:30 AM&ndash;1:30 PM (Total)</td><td class="num">2</td></tr>
+
+  <tr class="section-gap"><td colspan="8">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td colspan="7">Category</td>
+    <td class="num">Players</td>
+  </tr>
+  <tr><td colspan="7">A Member</td><td class="num">682</td></tr>
+  <tr><td colspan="7">Guest</td><td class="num">313</td></tr>
+  <tr><td colspan="7">Individual Golf Member</td><td class="num">300</td></tr>
+  <tr><td colspan="7">Jr Executive Member</td><td class="num">279</td></tr>
+  <tr><td colspan="7">A Member – Spouse</td><td class="num">230</td></tr>
+  <tr><td colspan="7">Jr Executive Member – Spouse</td><td class="num">70</td></tr>
+  <tr><td colspan="7">Junior Class 18+</td><td class="num">68</td></tr>
+  <tr><td colspan="7">Family Guest</td><td class="num">43</td></tr>
+  <tr><td colspan="7">Junior Class 4-8</td><td class="num">23</td></tr>
+  <tr><td colspan="7">Junior Class 12-15</td><td class="num">15</td></tr>
+  <tr><td colspan="7">Charter Member</td><td class="num">14</td></tr>
+  <tr><td colspan="7">Junior Class 16-17</td><td class="num">11</td></tr>
+  <tr><td colspan="7">Officer</td><td class="num">9</td></tr>
+  <tr><td colspan="7">Junior Class 9-11</td><td class="num">8</td></tr>
+  <tr><td colspan="7">Mid Week Membership</td><td class="num">8</td></tr>
+  <tr><td colspan="7">Out of State</td><td class="num">7</td></tr>
+  <tr><td colspan="7">Charter Member – Spouse</td><td class="num">5</td></tr>
+  <tr><td colspan="7">Founder Member</td><td class="num">4</td></tr>
+  <tr><td colspan="7">Out of State – Spouse</td><td class="num">2</td></tr>
+  <tr><td colspan="7">Founder Member – Spouse</td><td class="num">2</td></tr>
+  <tr><td colspan="7">Mid Week Membership – Spouse</td><td class="num">2</td></tr>
+  <tr><td colspan="7">Mid Week Junior Class 18+</td><td class="num">1</td></tr>
+  <tr><td colspan="7">Governor's Privilege – Spouse</td><td class="num">1</td></tr>
+
+  <tr class="section-gap"><td colspan="8">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Date</td>
+    <td class="num">Total Players</td>
+    <td class="num">Tee Times Booked</td>
+    <td class="num">Members</td>
+    <td class="num">Guests</td>
+    <td class="num">3-Guest Groups (11:30 AM&ndash;1:30 PM)</td>
+    <td class="num">High / Low</td>
+    <td class="num">Weather</td>
+  </tr>
+  <tr><td>Fri, May 1</td><td class="num">161</td><td class="num">58 / 64</td><td class="num">135</td><td class="num">26</td><td class="num">0</td><td class="num">63° / 43°</td><td class="num">Partly Cloudy</td></tr>
+  <tr><td>Fri, May 8</td><td class="num">181</td><td class="num">58 / 64</td><td class="num">157</td><td class="num">24</td><td class="num">0</td><td class="num">61° / 36°</td><td class="num">Partly Cloudy</td></tr>
+  <tr><td>Fri, May 15</td><td class="num">161</td><td class="num">56 / 67</td><td class="num">141</td><td class="num">20</td><td class="num">0</td><td class="num">54° / 45°</td><td class="num">Overcast</td></tr>
+  <tr><td>Fri, May 22</td><td class="num">216</td><td class="num">66 / 70</td><td class="num">178</td><td class="num">38</td><td class="num">0</td><td class="num">63° / 41°</td><td class="num">Sunny</td></tr>
+  <tr><td>Fri, May 29</td><td class="num">199</td><td class="num">66 / 70</td><td class="num">171</td><td class="num">28</td><td class="num">0</td><td class="num">70° / 48°</td><td class="num">Partly Cloudy</td></tr>
+  <tr><td>Fri, Jun 5</td><td class="num">210</td><td class="num">64 / 70</td><td class="num">177</td><td class="num">33</td><td class="num">0</td><td class="num">88° / 52°</td><td class="num">Sunny</td></tr>
+  <tr><td>Fri, Jun 12</td><td class="num">180</td><td class="num">63 / 70</td><td class="num">146</td><td class="num">34</td><td class="num">0</td><td class="num">91° / 70°</td><td class="num">Sunny</td></tr>
+  <tr><td>Fri, Jun 19</td><td class="num">217</td><td class="num">65 / 70</td><td class="num">174</td><td class="num">43</td><td class="num">0</td><td class="num">79° / 63°</td><td class="num">Partly Cloudy</td></tr>
+  <tr class="status-note"><td colspan="8">Fri, Jun 26 — No tee sheet this date. Invitational Tournament held at the club.</td></tr>
+  <tr><td>Fri, Jul 3</td><td class="num">144</td><td class="num">48 / 66</td><td class="num">119</td><td class="num">25</td><td class="num">1 (11:40 AM)</td><td class="num">97° / 79°</td><td class="num">Sunny</td></tr>
+  <tr><td>Fri, Jul 10</td><td class="num">206</td><td class="num">67 / 71</td><td class="num">159</td><td class="num">47</td><td class="num">0</td><td class="num">88° / 66°</td><td class="num">Partly Cloudy</td></tr>
+  <tr><td>Fri, Jul 17</td><td class="num">222</td><td class="num">68 / 73</td><td class="num">184</td><td class="num">38</td><td class="num">1 (11:40 AM)</td><td class="num">84° / 55°</td><td class="num">Sunny</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-season" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band">
+    <td colspan="2" class="club">2026 WEEKEND MORNING REGULAR-PLAY (8 am to 10:50)</td>
+  </tr>
+  <tr class="title-band">
+    <td colspan="2" class="sub">Season Summary — May 2 – July 19, 2026 (24 Report Dates)</td>
+  </tr>
+  <tr class="meta">
+    <td colspan="2">Source: 24 original Charter Oak CC tee sheet PDFs (May 2 – July 19, 2026), parsed directly and checksummed against each PDF's stated player count &nbsp;|&nbsp; Tee times of 10:50 AM or earlier only, all dates included</td>
+  </tr>
+
+  <tr class="header-row">
+    <td>Metric</td>
+    <td class="num">Value</td>
+  </tr>
+  <tr><td>Report Dates</td><td class="num">24</td></tr>
+  <tr><td>Regular-Play Player Rounds</td><td class="num">1,788</td></tr>
+  <tr><td>Unique Members</td><td class="num">334</td></tr>
+  <tr><td>Average Players per Date</td><td class="num">74.5</td></tr>
+  <tr><td>18-Hole Rounds</td><td class="num">1,698</td></tr>
+  <tr><td>9-Hole Rounds</td><td class="num">90</td></tr>
+  <tr><td>Guest Fees</td><td class="num">111</td></tr>
+  <tr><td>Guest % of Regular Play</td><td class="num">13.3%</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Date</td>
+    <td>Regular-Play Players</td>
+  </tr>
+  <tr><td>Sat, May 2</td><td class="databar-cell"><div class="databar-fill" style="width:33%"></div><span>40</span></td></tr>
+  <tr><td>Sun, May 3</td><td class="databar-cell"><div class="databar-fill" style="width:48%"></div><span>57</span></td></tr>
+  <tr><td>Sat, May 9</td><td class="databar-cell"><div class="databar-fill" style="width:33%"></div><span>40</span></td></tr>
+  <tr><td>Sun, May 10</td><td class="databar-cell"><div class="databar-fill" style="width:42%"></div><span>51</span></td></tr>
+  <tr><td>Sat, May 16</td><td class="databar-cell"><div class="databar-fill" style="width:64%"></div><span>77</span></td></tr>
+  <tr><td>Sun, May 17</td><td class="databar-cell"><div class="databar-fill" style="width:62%"></div><span>74</span></td></tr>
+  <tr><td>Sat, May 23</td><td class="databar-cell"><div class="databar-fill" style="width:77%"></div><span>92</span></td></tr>
+  <tr><td>Sun, May 24</td><td class="databar-cell"><div class="databar-fill" style="width:21%"></div><span>25</span></td></tr>
+  <tr><td>Sat, May 30</td><td class="databar-cell"><div class="databar-fill" style="width:8%"></div><span>9</span></td></tr>
+  <tr><td>Sun, May 31</td><td class="databar-cell"><div class="databar-fill" style="width:77%"></div><span>92</span></td></tr>
+  <tr><td>Sat, Jun 6</td><td class="databar-cell"><div class="databar-fill" style="width:71%"></div><span>85</span></td></tr>
+  <tr><td>Sun, Jun 7</td><td class="databar-cell"><div class="databar-fill" style="width:68%"></div><span>81</span></td></tr>
+  <tr><td>Sat, Jun 13</td><td class="databar-cell"><div class="databar-fill" style="width:72%"></div><span>86</span></td></tr>
+  <tr><td>Sun, Jun 14</td><td class="databar-cell"><div class="databar-fill" style="width:61%"></div><span>73</span></td></tr>
+  <tr><td>Sat, Jun 20</td><td class="databar-cell"><div class="databar-fill" style="width:80%"></div><span>96</span></td></tr>
+  <tr><td>Sun, Jun 21</td><td class="databar-cell"><div class="databar-fill" style="width:83%"></div><span>100</span></td></tr>
+  <tr><td>Sat, Jun 27</td><td class="databar-cell"><div class="databar-fill" style="width:100%"></div><span>120 (peak)</span></td></tr>
+  <tr><td>Sun, Jun 28</td><td class="databar-cell"><div class="databar-fill" style="width:100%"></div><span>120 (peak)</span></td></tr>
+  <tr><td>Sat, Jul 4</td><td class="databar-cell"><div class="databar-fill" style="width:62%"></div><span>75</span></td></tr>
+  <tr><td>Sun, Jul 5</td><td class="databar-cell"><div class="databar-fill" style="width:70%"></div><span>84</span></td></tr>
+  <tr><td>Sat, Jul 11</td><td class="databar-cell"><div class="databar-fill" style="width:63%"></div><span>76</span></td></tr>
+  <tr><td>Sun, Jul 12</td><td class="databar-cell"><div class="databar-fill" style="width:50%"></div><span>60</span></td></tr>
+  <tr><td>Sat, Jul 18</td><td class="databar-cell"><div class="databar-fill" style="width:74%"></div><span>89</span></td></tr>
+  <tr><td>Sun, Jul 19</td><td class="databar-cell"><div class="databar-fill" style="width:72%"></div><span>86</span></td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-members" class="tabpanel">
+<div class="sheet" style="max-width:1000px;">
+<table>
+  <tr class="title-band"><td colspan="11" class="club">MEMBER ROUND TOTALS (8 am to 10:50 am)</td></tr>
+  <tr class="title-band"><td colspan="11" class="sub">Members only, May 2 – July 19, 2026 (334 records — guests excluded)</td></tr>
+  <tr class="meta"><td colspan="11">Click a column header to sort. Guest/Family Guest/Comp players are excluded from this table (see Guest Summary tab). Source: 24 original Charter Oak CC tee sheet PDFs, parsed directly and checksummed against each PDF's stated player count.</td></tr>
+  <tr class="meta"><td colspan="11">203 of 334 members (60.8%) have played on both a Saturday and a Sunday this season &mdash; 59 have only played Saturdays, 72 have only played Sundays.</td></tr>
+  <tr class="meta"><td colspan="11">161 of 334 members (48.2%) have played both a Saturday AND a Sunday of the same weekend at least once &mdash; see "Both Days (Same Wknd)" for how many of the 12 weekends each member did this.</td></tr>
+</table>
+<div class="scroll-table">
+<table id="membersTable">
+  <thead>
+  <tr class="header-row">
+    <th class="sortable" data-type="text">Player</th>
+    <th class="sortable" data-type="text">Category</th>
+    <th class="sortable num" data-type="num">Total Rounds</th>
+    <th class="sortable num" data-type="num">18-Hole</th>
+    <th class="sortable num" data-type="num">9-Hole</th>
+    <th class="sortable num" data-type="num">Walk</th>
+    <th class="sortable num" data-type="num">Golf Cart</th>
+    <th class="sortable num" data-type="num">Push Cart</th>
+    <th class="sortable num" data-type="num">Saturday</th>
+    <th class="sortable num" data-type="num">Sunday</th>
+    <th class="sortable num" data-type="num">Both Days (Same Wknd)</th>
+  </tr>
+  </thead>
+  <tbody>
+<tr><td>Bonner, Patrick</td><td>Individual Golf Member</td><td class="num">20</td><td class="num">19</td><td class="num">1</td><td class="num">20</td><td class="num">0</td><td class="num">0</td><td class="num">9</td><td class="num">11</td><td class="num">9</td></tr>
+<tr><td>Baldwin, Samuel</td><td>Individual Golf Member</td><td class="num">19</td><td class="num">19</td><td class="num">0</td><td class="num">6</td><td class="num">11</td><td class="num">0</td><td class="num">10</td><td class="num">9</td><td class="num">9</td></tr>
+<tr><td>Doheny, Sam</td><td>Individual Golf Member</td><td class="num">19</td><td class="num">19</td><td class="num">0</td><td class="num">17</td><td class="num">0</td><td class="num">0</td><td class="num">9</td><td class="num">10</td><td class="num">7</td></tr>
+<tr><td>Tsao, Jim</td><td>A Member</td><td class="num">19</td><td class="num">19</td><td class="num">0</td><td class="num">14</td><td class="num">5</td><td class="num">0</td><td class="num">8</td><td class="num">11</td><td class="num">8</td></tr>
+<tr><td>Pettengill, Graham</td><td>Individual Golf Member</td><td class="num">18</td><td class="num">18</td><td class="num">0</td><td class="num">18</td><td class="num">0</td><td class="num">0</td><td class="num">10</td><td class="num">8</td><td class="num">7</td></tr>
+<tr><td>Daniell, Dana</td><td>Individual Golf Member</td><td class="num">17</td><td class="num">16</td><td class="num">1</td><td class="num">13</td><td class="num">2</td><td class="num">0</td><td class="num">7</td><td class="num">10</td><td class="num">7</td></tr>
+<tr><td>Lustig, Mark</td><td>A Member</td><td class="num">16</td><td class="num">16</td><td class="num">0</td><td class="num">13</td><td class="num">1</td><td class="num">0</td><td class="num">7</td><td class="num">9</td><td class="num">5</td></tr>
+<tr><td>Morris, James A.</td><td>Individual Golf Member</td><td class="num">16</td><td class="num">16</td><td class="num">0</td><td class="num">1</td><td class="num">15</td><td class="num">0</td><td class="num">9</td><td class="num">7</td><td class="num">6</td></tr>
+<tr><td>Peek, Jeff</td><td>Individual Golf Member</td><td class="num">16</td><td class="num">16</td><td class="num">0</td><td class="num">16</td><td class="num">0</td><td class="num">0</td><td class="num">8</td><td class="num">8</td><td class="num">7</td></tr>
+<tr><td>Deignan, Robert</td><td>A Member</td><td class="num">15</td><td class="num">15</td><td class="num">0</td><td class="num">7</td><td class="num">6</td><td class="num">0</td><td class="num">7</td><td class="num">8</td><td class="num">6</td></tr>
+<tr><td>Fagan, John</td><td>A Member</td><td class="num">15</td><td class="num">14</td><td class="num">1</td><td class="num">1</td><td class="num">11</td><td class="num">1</td><td class="num">7</td><td class="num">8</td><td class="num">6</td></tr>
+<tr><td>Hanna, Ryan</td><td>A Member</td><td class="num">15</td><td class="num">15</td><td class="num">0</td><td class="num">0</td><td class="num">13</td><td class="num">0</td><td class="num">7</td><td class="num">8</td><td class="num">5</td></tr>
+<tr><td>Hill, Cameron</td><td>Jr Executive Member</td><td class="num">15</td><td class="num">15</td><td class="num">0</td><td class="num">15</td><td class="num">0</td><td class="num">0</td><td class="num">7</td><td class="num">8</td><td class="num">5</td></tr>
+<tr><td>Austin, Tom</td><td>A Member</td><td class="num">14</td><td class="num">14</td><td class="num">0</td><td class="num">6</td><td class="num">8</td><td class="num">0</td><td class="num">7</td><td class="num">7</td><td class="num">5</td></tr>
+<tr><td>Desormeaux, Brandon</td><td>A Member</td><td class="num">14</td><td class="num">14</td><td class="num">0</td><td class="num">14</td><td class="num">0</td><td class="num">0</td><td class="num">7</td><td class="num">7</td><td class="num">5</td></tr>
+<tr><td>Frain, Brendan</td><td>Jr Executive Member</td><td class="num">14</td><td class="num">14</td><td class="num">0</td><td class="num">5</td><td class="num">9</td><td class="num">0</td><td class="num">8</td><td class="num">6</td><td class="num">5</td></tr>
+<tr><td>Milburn, Randy</td><td>A Member</td><td class="num">14</td><td class="num">13</td><td class="num">1</td><td class="num">10</td><td class="num">4</td><td class="num">0</td><td class="num">8</td><td class="num">6</td><td class="num">5</td></tr>
+<tr><td>Frain, William</td><td>Individual Golf Member</td><td class="num">13</td><td class="num">13</td><td class="num">0</td><td class="num">1</td><td class="num">12</td><td class="num">0</td><td class="num">6</td><td class="num">7</td><td class="num">5</td></tr>
+<tr><td>Mc Laughlin, William</td><td>Individual Golf Member</td><td class="num">13</td><td class="num">13</td><td class="num">0</td><td class="num">6</td><td class="num">5</td><td class="num">0</td><td class="num">5</td><td class="num">8</td><td class="num">4</td></tr>
+<tr><td>Mihalek, James</td><td>A Member</td><td class="num">13</td><td class="num">12</td><td class="num">1</td><td class="num">11</td><td class="num">2</td><td class="num">0</td><td class="num">5</td><td class="num">8</td><td class="num">4</td></tr>
+<tr><td>Rodgers, Christopher</td><td>A Member</td><td class="num">13</td><td class="num">13</td><td class="num">0</td><td class="num">0</td><td class="num">13</td><td class="num">0</td><td class="num">6</td><td class="num">7</td><td class="num">5</td></tr>
+<tr><td>Scogland, Brian</td><td>A Member</td><td class="num">13</td><td class="num">13</td><td class="num">0</td><td class="num">6</td><td class="num">7</td><td class="num">0</td><td class="num">8</td><td class="num">5</td><td class="num">5</td></tr>
+<tr><td>Vandervelden, James</td><td>A Member</td><td class="num">13</td><td class="num">13</td><td class="num">0</td><td class="num">9</td><td class="num">2</td><td class="num">0</td><td class="num">5</td><td class="num">8</td><td class="num">5</td></tr>
+<tr><td>Choi, Daniel</td><td>Jr Executive Member</td><td class="num">12</td><td class="num">12</td><td class="num">0</td><td class="num">9</td><td class="num">3</td><td class="num">0</td><td class="num">4</td><td class="num">8</td><td class="num">2</td></tr>
+<tr><td>Collins, Timothy</td><td>Individual Golf Member</td><td class="num">12</td><td class="num">10</td><td class="num">2</td><td class="num">10</td><td class="num">2</td><td class="num">0</td><td class="num">5</td><td class="num">7</td><td class="num">4</td></tr>
+<tr><td>Cunniff, Brian</td><td>A Member</td><td class="num">12</td><td class="num">12</td><td class="num">0</td><td class="num">11</td><td class="num">1</td><td class="num">0</td><td class="num">6</td><td class="num">6</td><td class="num">4</td></tr>
+<tr><td>Downing, Jim</td><td>Individual Golf Member</td><td class="num">12</td><td class="num">12</td><td class="num">0</td><td class="num">7</td><td class="num">5</td><td class="num">0</td><td class="num">6</td><td class="num">6</td><td class="num">5</td></tr>
+<tr><td>Martin, Jack</td><td>Individual Golf Member</td><td class="num">12</td><td class="num">11</td><td class="num">1</td><td class="num">9</td><td class="num">3</td><td class="num">0</td><td class="num">6</td><td class="num">6</td><td class="num">3</td></tr>
+<tr><td>Poist, Bryan</td><td>Individual Golf Member</td><td class="num">12</td><td class="num">11</td><td class="num">1</td><td class="num">0</td><td class="num">12</td><td class="num">0</td><td class="num">6</td><td class="num">6</td><td class="num">4</td></tr>
+<tr><td>Roth, Mark</td><td>Individual Golf Member</td><td class="num">12</td><td class="num">12</td><td class="num">0</td><td class="num">10</td><td class="num">2</td><td class="num">0</td><td class="num">7</td><td class="num">5</td><td class="num">3</td></tr>
+<tr><td>Sanzone, Robert</td><td>A Member</td><td class="num">12</td><td class="num">12</td><td class="num">0</td><td class="num">7</td><td class="num">1</td><td class="num">2</td><td class="num">8</td><td class="num">4</td><td class="num">3</td></tr>
+<tr><td>Sjostedt, Kurt</td><td>A Member</td><td class="num">12</td><td class="num">12</td><td class="num">0</td><td class="num">3</td><td class="num">7</td><td class="num">0</td><td class="num">9</td><td class="num">3</td><td class="num">3</td></tr>
+<tr><td>Castelli, Justin</td><td>Jr Executive Member</td><td class="num">11</td><td class="num">10</td><td class="num">1</td><td class="num">11</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">7</td><td class="num">2</td></tr>
+<tr><td>Daigneault, Robert</td><td>A Member</td><td class="num">11</td><td class="num">11</td><td class="num">0</td><td class="num">0</td><td class="num">11</td><td class="num">0</td><td class="num">7</td><td class="num">4</td><td class="num">3</td></tr>
+<tr><td>Jagodzinski, George</td><td>A Member</td><td class="num">11</td><td class="num">11</td><td class="num">0</td><td class="num">4</td><td class="num">7</td><td class="num">0</td><td class="num">5</td><td class="num">6</td><td class="num">3</td></tr>
+<tr><td>La Prade, David</td><td>Individual Golf Member</td><td class="num">11</td><td class="num">11</td><td class="num">0</td><td class="num">0</td><td class="num">11</td><td class="num">0</td><td class="num">9</td><td class="num">2</td><td class="num">2</td></tr>
+<tr><td>Massarotti, Anthony</td><td>A Member</td><td class="num">11</td><td class="num">11</td><td class="num">0</td><td class="num">7</td><td class="num">4</td><td class="num">0</td><td class="num">5</td><td class="num">6</td><td class="num">3</td></tr>
+<tr><td>Micciche, Michael</td><td>A Member</td><td class="num">11</td><td class="num">11</td><td class="num">0</td><td class="num">11</td><td class="num">0</td><td class="num">0</td><td class="num">7</td><td class="num">4</td><td class="num">2</td></tr>
+<tr><td>Novak, Matthew</td><td>A Member</td><td class="num">11</td><td class="num">9</td><td class="num">2</td><td class="num">8</td><td class="num">1</td><td class="num">0</td><td class="num">6</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Rogers, Thomas</td><td>A Member</td><td class="num">11</td><td class="num">9</td><td class="num">2</td><td class="num">6</td><td class="num">5</td><td class="num">0</td><td class="num">3</td><td class="num">8</td><td class="num">3</td></tr>
+<tr><td>Ballard, Chris</td><td>A Member</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">1</td><td class="num">9</td><td class="num">0</td><td class="num">5</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Denaro, David</td><td>Individual Golf Member</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">2</td><td class="num">7</td><td class="num">1</td><td class="num">4</td><td class="num">6</td><td class="num">3</td></tr>
+<tr><td>Kapadia, Mitesh</td><td>A Member</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">2</td><td class="num">6</td><td class="num">0</td><td class="num">4</td><td class="num">6</td><td class="num">4</td></tr>
+<tr><td>Kleinerman, Jason</td><td>A Member</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">7</td><td class="num">1</td><td class="num">0</td><td class="num">5</td><td class="num">5</td><td class="num">3</td></tr>
+<tr><td>Mac Culloch, Kendall</td><td>Individual Golf Member</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">0</td><td class="num">10</td><td class="num">0</td><td class="num">4</td><td class="num">6</td><td class="num">3</td></tr>
+<tr><td>Barrows, Jason</td><td>Individual Golf Member</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">7</td><td class="num">2</td><td class="num">0</td><td class="num">5</td><td class="num">4</td><td class="num">2</td></tr>
+<tr><td>Butler, Matthew</td><td>Individual Golf Member</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">4</td><td class="num">5</td><td class="num">0</td><td class="num">5</td><td class="num">4</td><td class="num">2</td></tr>
+<tr><td>Cole, Jeff</td><td>Individual Golf Member</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">0</td><td class="num">5</td><td class="num">4</td><td class="num">1</td></tr>
+<tr><td>Delaney, Peter</td><td>A Member</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">6</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">6</td><td class="num">1</td></tr>
+<tr><td>Di Pierro, Michael</td><td>A Member</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">6</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">6</td><td class="num">2</td></tr>
+<tr><td>Mc Carthy, Pat</td><td>A Member</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">0</td><td class="num">9</td><td class="num">0</td><td class="num">5</td><td class="num">4</td><td class="num">3</td></tr>
+<tr><td>Skowronski, Jay</td><td>A Member</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">5</td><td class="num">4</td><td class="num">0</td><td class="num">6</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Walsh, Stephen</td><td>Individual Golf Member</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">1</td><td class="num">5</td><td class="num">3</td><td class="num">6</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Butters, Fred</td><td>A Member</td><td class="num">8</td><td class="num">7</td><td class="num">1</td><td class="num">8</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">4</td><td class="num">2</td></tr>
+<tr><td>Corcoran, Ryan</td><td>Jr Executive Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">5</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">7</td><td class="num">1</td></tr>
+<tr><td>Dailey, William E.</td><td>A Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">5</td><td class="num">1</td><td class="num">0</td><td class="num">5</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Fairley, Jay</td><td>A Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">0</td><td class="num">6</td><td class="num">0</td><td class="num">3</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Holcomb, Matthew</td><td>A Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">5</td><td class="num">3</td><td class="num">0</td><td class="num">5</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Katz, Robert</td><td>Founder Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">0</td><td class="num">6</td><td class="num">0</td><td class="num">3</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Kilcoyne, Brian</td><td>A Member</td><td class="num">8</td><td class="num">6</td><td class="num">2</td><td class="num">0</td><td class="num">8</td><td class="num">0</td><td class="num">5</td><td class="num">3</td><td class="num">3</td></tr>
+<tr><td>Lapointe, Blair</td><td>Jr Executive Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">7</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">5</td><td class="num">1</td></tr>
+<tr><td>Lawton, Steven</td><td>Jr Executive Member</td><td class="num">8</td><td class="num">7</td><td class="num">1</td><td class="num">0</td><td class="num">8</td><td class="num">0</td><td class="num">4</td><td class="num">4</td><td class="num">1</td></tr>
+<tr><td>Murray, David</td><td>Individual Golf Member</td><td class="num">8</td><td class="num">7</td><td class="num">1</td><td class="num">0</td><td class="num">8</td><td class="num">0</td><td class="num">4</td><td class="num">4</td><td class="num">2</td></tr>
+<tr><td>Rakowski, Paul</td><td>Individual Golf Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">7</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">5</td><td class="num">3</td></tr>
+<tr><td>Sisodia, Ajay</td><td>A Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">6</td><td class="num">2</td><td class="num">0</td><td class="num">3</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Small, Jonathan</td><td>Individual Golf Member</td><td class="num">8</td><td class="num">7</td><td class="num">1</td><td class="num">0</td><td class="num">8</td><td class="num">0</td><td class="num">6</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Tammen, Jim</td><td>Individual Golf Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">3</td><td class="num">5</td><td class="num">3</td></tr>
+<tr><td>Vandervelden, Jamie</td><td>A Member - Spouse</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">1</td><td class="num">4</td><td class="num">3</td><td class="num">1</td><td class="num">7</td><td class="num">1</td></tr>
+<tr><td>Wong, Alvin</td><td>Jr Executive Member</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">5</td><td class="num">2</td><td class="num">0</td><td class="num">3</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Cadogan, Deborah</td><td>Individual Golf Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">1</td><td class="num">4</td><td class="num">0</td><td class="num">3</td><td class="num">4</td><td class="num">2</td></tr>
+<tr><td>Chistyakov, Max</td><td>Jr Executive Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">1</td><td class="num">6</td><td class="num">0</td><td class="num">5</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Di Maggio, Kenneth</td><td>Individual Golf Member</td><td class="num">7</td><td class="num">6</td><td class="num">1</td><td class="num">5</td><td class="num">1</td><td class="num">1</td><td class="num">3</td><td class="num">4</td><td class="num">0</td></tr>
+<tr><td>Gozdeck, Todj</td><td>A Member</td><td class="num">7</td><td class="num">3</td><td class="num">4</td><td class="num">3</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">3</td></tr>
+<tr><td>Graff, Todd</td><td>Individual Golf Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">4</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Grimmett, Benjamin</td><td>A Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">5</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Hankey, John</td><td>Individual Golf Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">5</td><td class="num">2</td><td class="num">0</td><td class="num">5</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Hewins, William</td><td>Individual Golf Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">1</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Kilcoyne, Nancy</td><td>A Member - Spouse</td><td class="num">7</td><td class="num">5</td><td class="num">2</td><td class="num">0</td><td class="num">7</td><td class="num">0</td><td class="num">5</td><td class="num">2</td><td class="num">2</td></tr>
+<tr><td>Lane, Alan</td><td>A Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">5</td><td class="num">2</td></tr>
+<tr><td>Lawton, Hillary</td><td>Jr Executive Member - Spouse</td><td class="num">7</td><td class="num">6</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Nicholas, Paul</td><td>Charter Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">1</td><td class="num">6</td><td class="num">0</td><td class="num">2</td><td class="num">5</td><td class="num">1</td></tr>
+<tr><td>Novak, Jennifer</td><td>A Member - Spouse</td><td class="num">7</td><td class="num">5</td><td class="num">2</td><td class="num">6</td><td class="num">1</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>O&#x27;Sullivan, Brendan</td><td>A Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">0</td><td class="num">7</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Schamber, Andrew</td><td>Jr Executive Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">3</td><td class="num">3</td><td class="num">4</td><td class="num">1</td></tr>
+<tr><td>Small, Leon</td><td>A Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">3</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Trask, Julie</td><td>A Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">6</td><td class="num">1</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Valukis, Sean</td><td>Jr Executive Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">6</td><td class="num">1</td></tr>
+<tr><td>Welch, Murray</td><td>A Member</td><td class="num">7</td><td class="num">7</td><td class="num">0</td><td class="num">1</td><td class="num">6</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">3</td></tr>
+<tr><td>Boraks, Jeremy</td><td>A Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">6</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Britt, Bobby</td><td>A Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">4</td><td class="num">2</td><td class="num">0</td><td class="num">3</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Coons, Brian</td><td>Jr Executive Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">5</td><td class="num">1</td><td class="num">0</td><td class="num">5</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Daniel, Craig</td><td>A Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">4</td><td class="num">2</td><td class="num">0</td><td class="num">4</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Donley, Michael</td><td>A Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Field, Ty</td><td>A Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">0</td><td class="num">6</td><td class="num">0</td><td class="num">1</td><td class="num">5</td><td class="num">1</td></tr>
+<tr><td>Halsey, Daniel</td><td>Individual Golf Member</td><td class="num">6</td><td class="num">5</td><td class="num">1</td><td class="num">0</td><td class="num">6</td><td class="num">0</td><td class="num">5</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Hannon, Michael</td><td>Jr Executive Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">4</td><td class="num">2</td></tr>
+<tr><td>Harding, Michael</td><td>Individual Golf Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">4</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">4</td><td class="num">2</td></tr>
+<tr><td>Johnson, Steven</td><td>A Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Mazin, David</td><td>A Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Murphy, Robert</td><td>Individual Golf Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">0</td><td class="num">6</td><td class="num">0</td><td class="num">3</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Patton, Daniel</td><td>Individual Golf Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">0</td><td class="num">6</td><td class="num">0</td><td class="num">2</td><td class="num">4</td><td class="num">1</td></tr>
+<tr><td>Percival, Rob</td><td>Individual Golf Member</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">4</td><td class="num">1</td></tr>
+<tr><td>Cadiente, Ivan</td><td>Jr Executive Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">0</td><td class="num">4</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Cappadona, Joseph</td><td>Jr Executive Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">3</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Cornacchia, Anthony</td><td>Jr Executive Member</td><td class="num">5</td><td class="num">4</td><td class="num">1</td><td class="num">4</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Dailey, Laura M.</td><td>A Member - Spouse</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">4</td><td class="num">1</td><td class="num">0</td><td class="num">4</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Griffiths, Scott</td><td>A Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Haydu, Frank III</td><td>Individual Golf Member</td><td class="num">5</td><td class="num">0</td><td class="num">5</td><td class="num">0</td><td class="num">5</td><td class="num">0</td><td class="num">3</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Hazzard, Sean</td><td>A Member</td><td class="num">5</td><td class="num">4</td><td class="num">1</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Jackman, Timothy</td><td>Jr Executive Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">4</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">0</td></tr>
+<tr><td>Krasnow, Mark</td><td>Individual Golf Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>La Fond, Mark</td><td>A Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Leverone, Kevin</td><td>A Member</td><td class="num">5</td><td class="num">4</td><td class="num">1</td><td class="num">3</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Levin, David</td><td>A Member</td><td class="num">5</td><td class="num">4</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Linehan, Kevin</td><td>A Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Lukehart, Wanda</td><td>A Member - Spouse</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">4</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Madden, Scott</td><td>Individual Golf Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td class="num">5</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Mc Kenna, Jamie</td><td>A Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">4</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Meehan, Michael</td><td>A Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">4</td><td class="num">1</td></tr>
+<tr><td>Mihalek, Vicki</td><td>A Member - Spouse</td><td class="num">5</td><td class="num">2</td><td class="num">3</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">5</td><td class="num">0</td></tr>
+<tr><td>Mulville, Dan</td><td>A Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Pacifico, James</td><td>Jr Executive Member</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Welch, Gail</td><td>A Member - Spouse</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td>Anamateros, Jason</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Archambault, Michael</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td></tr>
+<tr><td>Austin, Kathryn</td><td>A Member - Spouse</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Blesso, Thomas</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td></tr>
+<tr><td>Carvalho, Elsa</td><td>A Member - Spouse</td><td class="num">4</td><td class="num">3</td><td class="num">1</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Carvalho, Roberto</td><td>A Member</td><td class="num">4</td><td class="num">3</td><td class="num">1</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Clark, William</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Crowley, Kevin</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Cunningham, Rick F</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Duker, Robert</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Fortin, Paul</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Gilmore, Brenden</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Gold, Seth</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">3</td><td class="num">1</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td></tr>
+<tr><td>Lam, Brian</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Levesque, Harold</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Losty, Kevin J.</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Mac Donnell, Craig</td><td>Individual Golf Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Mazares, Greg</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">3</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Mc Cabe, Connor</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Rielly, Paul</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Rigby, Joe</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">0</td></tr>
+<tr><td>Roth, Benjamin</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Sampson, Michael</td><td>A Member</td><td class="num">4</td><td class="num">3</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Sbardella, Greg</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Schaefer, Yannick</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">0</td></tr>
+<tr><td>Seney, Scott</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Soden, Kevin</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Tillett, Charles</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Tinsley, Richard</td><td>Individual Golf Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">2</td></tr>
+<tr><td>Tripp, Caleb</td><td>Jr Executive Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Whitehead, Scott</td><td>A Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td>Wong, Steven</td><td>Individual Golf Member</td><td class="num">4</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Adams, Jr., Doug</td><td>Individual Golf Member</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Anderson, Don</td><td>A Member</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td></tr>
+<tr><td>Attlan, Charles</td><td>Individual Golf Member</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Binkewicz, Peter</td><td>Individual Golf Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Butters, Deborah</td><td>A Member - Spouse</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Cohen, Alexander</td><td>Jr Executive Member</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Comeau, Greg</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Curtin, W. Griffin</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>D&#x27;Amico, Anthony</td><td>Individual Golf Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Drew, Bill</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Eaddy, Brian</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Enerson, Benjamin</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td></tr>
+<tr><td>Gerson, Brian</td><td>Individual Golf Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Johnson, Elizabeth</td><td>A Member - Spouse</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Justice, Ben</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td></tr>
+<tr><td>Kilcoyne, Charlie</td><td>Junior Class 18+</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Madden, Joe</td><td>Jr Executive Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Malkin, Frank</td><td>Charter Member</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Mc Carthy, Mick</td><td>Individual Golf Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Mc Keon, John</td><td>Individual Golf Member</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Milkosky, James</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Nevils, Mark</td><td>A Member</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td></tr>
+<tr><td>O&#x27;Neil, Scott</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Ordonez, Christian</td><td>Jr Executive Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Rodgers, Danyel</td><td>A Member - Spouse</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Schastny, Peter</td><td>Individual Golf Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Seidman, Robin</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Shaw, Stephen</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Small, Michael</td><td>Junior Class 18+</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Ternus, Nathan</td><td>Jr Executive Member</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Thaxton, Scott</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Welch, Andrew</td><td>Junior Class 18+</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Wheeler, Scott</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>Williams, Deborah</td><td>A Member - Spouse</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Williams, Thomas</td><td>A Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Wilson, Michael</td><td>Jr Executive Member</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td>) Cohen, Alexander</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Acquaviva, Thomas</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Agata, Simon-Peter</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Ahlquist, David</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Ashkinos, Stephen</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Balchunas, Steve</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Bertonazzi, Eric</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Brien, Patrick</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Brill, Benjamin</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Bruno, John</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Burke, Steven</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Cappadona, Owen</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Dailey, Cameron</td><td>Junior Class 18+</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Daley, Pat</td><td>Officer</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Davagian, Jennifer</td><td>Individual Golf Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Drew, Jared</td><td>Junior Class 18+</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Dwyer, Bob</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Hawkins, Kerri</td><td>A Member - Spouse</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Hudson, Gil</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Huntowski, Frank</td><td>Charter Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Johnson, Matthew</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Kafker, Roger</td><td>Individual Golf Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Katz, David</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Lisavich, Michael</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Lustig, Marjorie</td><td>A Member - Spouse</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Massarotti, Xavier</td><td>Junior Class 18+</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Mc Cabe, Frank</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Moscoffian, Matt</td><td>Individual Golf Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Mulvehill, Brian</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Munuz, Evan</td><td>Junior Class 18+</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Muscatiello, Martin</td><td>A Member</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Muscatiello, Matthew</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 1 Butler, Matthew</td><td>Individual Golf Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Quinn, Brendan</td><td>Junior Class 18+</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Quinn, Bryan</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Rade, Matthew</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Requadt, Scott</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Ruigh, Katie</td><td>Jr Executive Member - Spouse</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Scalia, Nicholas</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Shane, Devin</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Sieber, Brian</td><td>Jr Executive Member</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Stowell, Trey</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Sullivan, Jonathan</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Tholander, Jason</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Tillett, Maureen</td><td>A Member - Spouse</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td></tr>
+<tr><td>Weil, Jeff</td><td>A Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Weil, Lisa</td><td>A Member - Spouse</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Whitehead, Ryan</td><td>Junior Class 18+</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>Yenke, Kathy</td><td>Individual Golf Member</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Babcock, Gregory</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Barringer, Kelly</td><td>Officer</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Breemen, Eric</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Brill, Cara</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Brown, Ryan</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Cappadona, Traci</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Carpenter, Jeff</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Carthy, Pat</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Cavallaro, Richard</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Ciminelli, David</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Coffin, Steven</td><td>Jr Executive Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Comeau, Launa</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Conroy, Mary Ellen</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Crowley, Mary Beth</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Cunningham, Natalie</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Curley, Liam</td><td>Junior Class 18+</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Curley, Mike</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Davis, CJ</td><td>Mid Week Membership</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Deignan, Christina</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Dings, Jack</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Dolan, Timothy</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Ewart, Christopher</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Fagan, Declan</td><td>Junior Class 18+</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Finkenbinder, Benjamin</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Fleming, David</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Forsythe, Eric</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Gold, Noelle</td><td>Jr Executive Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Gottlieb, Peter</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Gozdeck, Karen</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Heath, David</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Hebsgaard, Carolyn</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Hebsgaard, Poul</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Herwitz, Jay</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Hornbeck, Russell</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Iodice, Michael</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Jiang, Frederick</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Katz, Andrea</td><td>Founder Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Kirby, Nathan</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Kucheman, Hank</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Kucheman, Patricia</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Leverone, Charlie</td><td>Junior Class 18+</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Leverone, Kristine</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Levesque, Arielle</td><td>Jr Executive Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Levine, Martha</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Lyons, Tim</td><td>A Member</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Makridakis, Patrick Jr.</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Malkin, Janice</td><td>Charter Member - Spouse</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Mc Cabe, Jack</td><td>Junior Class 18+</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Mehta, Rohan</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Mello, Bruce</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Milton, Mark</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Moleux, Douglas</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Moore, Nicholas</td><td>Junior Class 18+</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Nevils, Jacqueline</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Nicholas, Janet</td><td>Charter Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>O&#x27;Donnell, Zachary</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Offen, Thomas</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Oksanen, Thomas</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Packhem, Christopher</td><td>Jr Executive Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 1 Barrows, Jason</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 1 Cole, Jeff</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Player 1 Eaddy, Brian</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 1 Martin, Timothy</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Player 1 Sanzone, Robert</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 2 Anamateros, Jason</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 2 Cole, Jeff</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 2 Holcomb, Matthew</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Player 2 Pettengill, Graham</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 2 Prozeller, Rocky</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Player 3 Cole, Jeff</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 3 Hudson, Gil</td><td>A Member</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Player 3 Lisavich, Michael</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 3 O&#x27;Sullivan, Brendan</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Player 3 Wong, Alvin</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Player 4 Cohen, Alexander</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Player 4 Sanzone, Robert</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Potts, Geoffrey</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Powers, Daniel</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Robinson, Jiles</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Rogers, Elizabeth</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Ryan, Christopher</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Salvo, David</td><td>Jr Executive Member</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Scari, Steve</td><td>Individual Golf Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Skowronski, Susan</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Small, Michelle</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Sun, Jie</td><td>Jr Executive Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Tarantino, Cooper</td><td>Junior Class 18+</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Thall, Jennifer</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Thall, Rick</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Wahlgren, Brian</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Webster, Noah</td><td>A Member</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td>Williams, Madeleine</td><td>Junior Class 18+</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Williams, Natalie</td><td>Junior Class 18+</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Young, Tina</td><td>A Member - Spouse</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="tab-category" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band"><td colspan="3" class="club">CATEGORY SUMMARY (8 am to 10:50 am)</td></tr>
+  <tr class="title-band"><td colspan="3" class="sub">Regular-Play Rounds by Membership Category</td></tr>
+  <tr class="meta"><td colspan="3">Source: 24 original Charter Oak CC tee sheet PDFs (May 2 – July 19, 2026), parsed directly and checksummed against each PDF's stated player count &nbsp;|&nbsp; 1,788 total regular-play rounds</td></tr>
+  <tr class="header-row"><td>Summary Category</td><td class="num">Rounds</td><td class="num">% of Total</td></tr>
+<tr><td>A Member</td><td class="num">705</td><td class="num">39.4%</td></tr>
+<tr><td>Individual Golf Member</td><td class="num">449</td><td class="num">25.1%</td></tr>
+<tr><td>Jr Executive Member</td><td class="num">239</td><td class="num">13.4%</td></tr>
+<tr><td>Guest</td><td class="num">238</td><td class="num">13.3%</td></tr>
+<tr><td>Spouse</td><td class="num">104</td><td class="num">5.8%</td></tr>
+<tr><td>Junior</td><td class="num">29</td><td class="num">1.6%</td></tr>
+<tr><td>Charter Member</td><td class="num">12</td><td class="num">0.7%</td></tr>
+<tr><td>Founder Member</td><td class="num">8</td><td class="num">0.4%</td></tr>
+<tr><td>Officer</td><td class="num">3</td><td class="num">0.2%</td></tr>
+<tr><td>Mid Week Membership</td><td class="num">1</td><td class="num">0.1%</td></tr>
+
+  <tr class="section-gap"><td colspan="3">&nbsp;</td></tr>
+
+  <tr class="title-band"><td colspan="3" class="club">CATEGORY SUMMARY (Entire Day)</td></tr>
+  <tr class="title-band"><td colspan="3" class="sub">All-Day Rounds by Membership Category</td></tr>
+  <tr class="meta"><td colspan="3">Source: 24 uploaded Charter Oak CC tee sheet PDFs (Saturdays: Apr 18, May 2–Jul 18; Sundays: May 3–Jul 12, 2026), parsed directly and checksummed against each PDF's stated player count &nbsp;|&nbsp; 3,900 total rounds, entire day (all tee times, not limited to 8–10:50 AM) &nbsp;|&nbsp; Note: this date set substitutes Saturday, April 18 for Sunday, July 19 (not yet available) versus the 8–10:50 AM table above.</td></tr>
+  <tr class="header-row"><td>Summary Category</td><td class="num">Rounds</td><td class="num">% of Total</td></tr>
+  <tr><td>A Member</td><td class="num">1,277</td><td class="num">32.7%</td></tr>
+  <tr><td>Guest</td><td class="num">696</td><td class="num">17.8%</td></tr>
+  <tr><td>Individual Golf Member</td><td class="num">622</td><td class="num">15.9%</td></tr>
+  <tr><td>Spouse</td><td class="num">453</td><td class="num">11.6%</td></tr>
+  <tr><td>Jr Executive Member</td><td class="num">412</td><td class="num">10.6%</td></tr>
+  <tr><td>Junior</td><td class="num">386</td><td class="num">9.9%</td></tr>
+  <tr><td>Charter Member</td><td class="num">20</td><td class="num">0.5%</td></tr>
+  <tr><td>Officer</td><td class="num">14</td><td class="num">0.4%</td></tr>
+  <tr><td>Founder Member</td><td class="num">13</td><td class="num">0.3%</td></tr>
+  <tr><td>Mid Week Membership</td><td class="num">7</td><td class="num">0.2%</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-guests" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band"><td colspan="2" class="club">GUEST SUMMARY (8 am to 10:50 am)</td></tr>
+  <tr class="title-band"><td colspan="2" class="sub">Regular-Play Guest Fee Summary</td></tr>
+  <tr class="meta"><td colspan="2">Source: 24 original Charter Oak CC tee sheet PDFs (May 2 – July 19, 2026), parsed directly and checksummed against each PDF's stated player count. Guest Fees = Guest + Family Guest categories only; Comp (complimentary) rounds are tracked separately and excluded from the fee count.</td></tr>
+
+  <tr class="header-row"><td>Metric</td><td class="num">Value</td></tr>
+  <tr><td>Guest % of Regular Play</td><td class="num">13.3%</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row"><td>Original Guest Type</td><td class="num">Raw Records</td></tr>
+  <tr><td>Guest</td><td class="num">89</td></tr>
+  <tr><td>Family Guest</td><td class="num">22</td></tr>
+  <tr><td>Comp</td><td class="num">127</td></tr>
+
+  <tr class="section-gap"><td colspan="2">&nbsp;</td></tr>
+
+  <tr class="header-row"><td>Date</td><td class="num">Guest Fees</td></tr>
+<tr><td>Sat, May 2</td><td class="num">0</td></tr>
+<tr><td>Sun, May 3</td><td class="num">0</td></tr>
+<tr><td>Sat, May 9</td><td class="num">4</td></tr>
+<tr><td>Sun, May 10</td><td class="num">9</td></tr>
+<tr><td>Sat, May 16</td><td class="num">1</td></tr>
+<tr><td>Sun, May 17</td><td class="num">5</td></tr>
+<tr><td>Sat, May 23</td><td class="num">9</td></tr>
+<tr><td>Sun, May 24</td><td class="num">2</td></tr>
+<tr><td>Sat, May 30</td><td class="num">0</td></tr>
+<tr><td>Sun, May 31</td><td class="num">0</td></tr>
+<tr><td>Sat, Jun 6</td><td class="num">9</td></tr>
+<tr><td>Sun, Jun 7</td><td class="num">9</td></tr>
+<tr><td>Sat, Jun 13</td><td class="num">8</td></tr>
+<tr><td>Sun, Jun 14</td><td class="num">3</td></tr>
+<tr><td>Sat, Jun 20</td><td class="num">11</td></tr>
+<tr><td>Sun, Jun 21</td><td class="num">6</td></tr>
+<tr><td>Sat, Jun 27</td><td class="num">0</td></tr>
+<tr><td>Sun, Jun 28</td><td class="num">0</td></tr>
+<tr><td>Sat, Jul 4</td><td class="num">9</td></tr>
+<tr><td>Sun, Jul 5</td><td class="num">8</td></tr>
+<tr><td>Sat, Jul 11</td><td class="num">0</td></tr>
+<tr><td>Sun, Jul 12</td><td class="num">0</td></tr>
+<tr><td>Sat, Jul 18</td><td class="num">10</td></tr>
+<tr><td>Sun, Jul 19</td><td class="num">8</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-sources" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band"><td colspan="2" class="club">SOURCE REPORTS</td></tr>
+  <tr class="title-band"><td colspan="2" class="sub">Original PDF tee sheets behind the season data</td></tr>
+  <tr class="meta"><td colspan="2">All 24 PDFs parsed directly and checksummed against each PDF's own stated player count (100% match on every date).</td></tr>
+  <tr class="header-row"><td>Date</td><td>Source PDF</td></tr>
+<tr><td>Sat, May 2, 2026</td><td>Saturday, May 2nd.pdf</td></tr>
+<tr><td>Sun, May 3, 2026</td><td>Sunday, May 3rd.pdf</td></tr>
+<tr><td>Sat, May 9, 2026</td><td>Saturday, May 9th.pdf</td></tr>
+<tr><td>Sun, May 10, 2026</td><td>Sunday, May 10th (Mother's Day).pdf</td></tr>
+<tr><td>Sat, May 16, 2026</td><td>Saturday, May 16th(1).pdf</td></tr>
+<tr><td>Sun, May 17, 2026</td><td>Sunday, May 17th.pdf</td></tr>
+<tr><td>Sat, May 23, 2026</td><td>Saturday, May 23rd.pdf</td></tr>
+<tr><td>Sun, May 24, 2026</td><td>Sunday May 24th.pdf</td></tr>
+<tr><td>Sat, May 30, 2026</td><td>Saturday May 30th.pdf</td></tr>
+<tr><td>Sun, May 31, 2026</td><td>Sunday, May 31st.pdf</td></tr>
+<tr><td>Sat, Jun 6, 2026</td><td>Saturday, June 6th.pdf</td></tr>
+<tr><td>Sun, Jun 7, 2026</td><td>Sunday, June 7th.pdf</td></tr>
+<tr><td>Sat, Jun 13, 2026</td><td>Saturday,June 13th.pdf</td></tr>
+<tr><td>Sun, Jun 14, 2026</td><td>Sunday, June 14th.pdf</td></tr>
+<tr><td>Sat, Jun 20, 2026</td><td>Saturday,June 20th.pdf</td></tr>
+<tr><td>Sun, Jun 21, 2026</td><td>Sunday, June 21st.pdf</td></tr>
+<tr><td>Sat, Jun 27, 2026</td><td>Saturday June 27th.pdf</td></tr>
+<tr><td>Sun, Jun 28, 2026</td><td>Sunday, June 28th.pdf</td></tr>
+<tr><td>Sat, Jul 4, 2026</td><td>Saturday, July 4th.pdf</td></tr>
+<tr><td>Sun, Jul 5, 2026</td><td>Sunday, July 5th.pdf</td></tr>
+<tr><td>Sat, Jul 11, 2026</td><td>Saturday July 11th.pdf</td></tr>
+<tr><td>Sun, Jul 12, 2026</td><td>Sunday, July 12th(1).pdf</td></tr>
+<tr><td>Sat, Jul 18, 2026</td><td>Saturday, July 18th (Final).pdf</td></tr>
+<tr><td>Sun, Jul 19, 2026</td><td>Sunday, July 19th (Final).pdf</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-notes" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band"><td colspan="2" class="club">METHODOLOGY &amp; NOTES</td></tr>
+  <tr class="title-band"><td colspan="2" class="sub">Rules applied to build the season data</td></tr>
+  <tr class="meta"><td colspan="2">Source: 24 original Charter Oak CC tee sheet PDFs (May 2 – July 19, 2026), parsed directly from each PDF's text layer using coordinate-based column detection, rebuilt July 21, 2026.</td></tr>
+  <tr class="header-row"><td>Rule</td><td>Application</td></tr>
+<tr><td>Time Window</td><td>Only tee times at 10:50 AM or earlier are included as "regular play," applied uniformly to every date including tournament days.</td></tr>
+<tr><td>Tournament Dates</td><td>June 27 (Invitational Tournament, course closed all day) and July 11 (Club Championship Weekend) are full-day club tournaments, but their pre-10:50 AM tee times are still counted under the uniform time-window rule above rather than excluded outright.</td></tr>
+<tr><td>Checksum Validation</td><td>Every PDF's extracted player count was verified against that PDF's own stated "(N Players)" header count. All 24 dates matched exactly (100%).</td></tr>
+<tr><td>Name Reconstruction</td><td>PDF text extraction sometimes glues two adjacent players' names together or splits a name fragment across a column boundary; both patterns are detected and repaired automatically before counting.</td></tr>
+<tr><td>Guest Categories</td><td>Guest, Family Guest, and Comp are grouped as Guest for category/member classification purposes.</td></tr>
+<tr><td>Guest Fee Definition</td><td>"Guest Fees" counts only fee-paying categories (Guest + Family Guest = 111). Comp (complimentary, 127 rounds) is tracked separately since no fee is charged.</td></tr>
+<tr><td>Round Definition</td><td>Each player appearance in a qualifying regular-play tee time counts as one round.</td></tr>
+<tr><td>Both Days, Same Weekend</td><td>Each of the 12 Saturday/Sunday pairs (May 2–3 through July 18–19) is checked individually per member; the Member Round Totals column counts how many of those 12 weekends a member played both days.</td></tr>
+</table>
+</div>
+</div>
+
+</main>
+</div>
+
+<script>
+(function() {
+  var PASSWORD = "Charter#2026";
+  var gate = document.getElementById('password-gate');
+  var content = document.getElementById('site-content');
+  function unlock() {
+    gate.style.display = 'none';
+    content.style.display = 'block';
+    var errEl = document.getElementById('gate-error');
+    if (errEl) errEl.textContent = '';
+  }
+  if (sessionStorage.getItem('coccGateOk') === '1') {
+    unlock();
+  }
+  window.checkGatePassword = function() {
+    var val = document.getElementById('gate-password').value;
+    if (val === PASSWORD) {
+      sessionStorage.setItem('coccGateOk', '1');
+      unlock();
+    } else {
+      document.getElementById('gate-error').textContent = 'Incorrect password.';
+    }
+  };
+  document.getElementById('gate-password').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkGatePassword();
+  });
+})();
+</script>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tabpanel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-tab') === id);
+  });
+}
+
+(function() {
+  var table = document.getElementById('membersTable');
+  if (!table) return;
+  var ths = table.querySelectorAll('thead th');
+  var sortState = {};
+  ths.forEach(function(th, idx) {
+    th.addEventListener('click', function() {
+      var type = th.getAttribute('data-type');
+      var tbody = table.querySelector('tbody');
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+      var asc = !sortState[idx];
+      sortState = {};
+      sortState[idx] = asc;
+      rows.sort(function(a, b) {
+        var av = a.children[idx].textContent.trim();
+        var bv = b.children[idx].textContent.trim();
+        if (type === 'num') {
+          return asc ? (parseFloat(av) - parseFloat(bv)) : (parseFloat(bv) - parseFloat(av));
+        }
+        return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+      });
+      rows.forEach(function(r) { tbody.appendChild(r); });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
