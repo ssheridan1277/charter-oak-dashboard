@@ -208,6 +208,7 @@
   <button data-tab="tab-members" onclick="showTab('tab-members')">Member Round Totals</button>
   <button data-tab="tab-category" onclick="showTab('tab-category')">Category Summary</button>
   <button data-tab="tab-guests" onclick="showTab('tab-guests')">Guest Summary</button>
+  <button data-tab="tab-ninehole" onclick="showTab('tab-ninehole')">9-Hole &amp; Weather</button>
   <button data-tab="tab-sources" onclick="showTab('tab-sources')">Source Reports</button>
   <button data-tab="tab-notes" onclick="showTab('tab-notes')">Notes</button>
 </nav>
@@ -1133,6 +1134,72 @@
 <tr><td>Sun, Jul 12</td><td class="num">0</td></tr>
 <tr><td>Sat, Jul 18</td><td class="num">10</td></tr>
 <tr><td>Sun, Jul 19</td><td class="num">8</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-ninehole" class="tabpanel">
+<div class="sheet">
+<table>
+  <tr class="title-band"><td colspan="6" class="club">CHARTER OAK COUNTRY CLUB</td></tr>
+  <tr class="title-band"><td colspan="6" class="sub">9-Hole Rounds &amp; Weather &mdash; Weekend Summary, Entire Day</td></tr>
+  <tr class="meta"><td colspan="6">Source: 24 uploaded Charter Oak CC tee sheet PDFs (Saturdays: Apr 18, May 2&ndash;Jul 18; Sundays: May 3&ndash;Jul 12, 2026), parsed directly and checksummed against each PDF's stated player count &nbsp;|&nbsp; Entire day (all tee times, not limited to a morning window) &nbsp;|&nbsp; Note: this date set substitutes Saturday, April 18 for Sunday, July 19 (not yet available) &nbsp;|&nbsp; Weather: Hudson, MA historical conditions &mdash; day's high/low and sky condition at midday (~11 AM&ndash;1 PM), via timeanddate.com.</td></tr>
+
+  <tr class="header-row"><td>Metric</td><td class="num">Value</td></tr>
+  <tr><td>Report Dates</td><td class="num">24</td></tr>
+  <tr><td>9-Hole Rounds (Entire Day)</td><td class="num">1,048</td></tr>
+  <tr><td>18-Hole Rounds (Entire Day)</td><td class="num">2,779</td></tr>
+  <tr><td>9-Hole Share of All Rounds</td><td class="num">26.9%</td></tr>
+  <tr><td>Not Determinable from Sheet</td><td class="num">73</td></tr>
+
+  <tr class="section-gap"><td colspan="6">&nbsp;</td></tr>
+
+  <tr class="header-row"><td colspan="6">What Time of Day Are 9-Hole Rounds Played?</td></tr>
+  <tr class="header-row"><td>Time Window</td><td class="num">9-Hole Rounds</td><td class="num" colspan="4">% of All 9-Hole Rounds</td></tr>
+  <tr><td>Before 8 AM</td><td class="num">20</td><td class="num" colspan="4">1.9%</td></tr>
+  <tr><td>8 AM &ndash; 11 AM</td><td class="num">60</td><td class="num" colspan="4">5.7%</td></tr>
+  <tr><td>11 AM &ndash; 2 PM</td><td class="num">184</td><td class="num" colspan="4">17.6%</td></tr>
+  <tr><td>2 PM &ndash; 5 PM</td><td class="num">581</td><td class="num" colspan="4">55.4%</td></tr>
+  <tr><td>After 5 PM</td><td class="num">203</td><td class="num" colspan="4">19.4%</td></tr>
+  <tr class="meta"><td colspan="6">9-hole play is overwhelmingly a late-afternoon pattern: over half of all 9-hole rounds (55.4%) tee off between 2 PM and 5 PM, consistent with twilight/late-afternoon play. Combined, 74.8% of 9-hole rounds start after 2 PM. Only 7.6% of 9-hole rounds happen before 11 AM.</td></tr>
+
+  <tr class="section-gap"><td colspan="6">&nbsp;</td></tr>
+
+  <tr class="header-row">
+    <td>Date</td>
+    <td class="num">Total Players</td>
+    <td class="num">9-Hole Rounds</td>
+    <td class="num">18-Hole Rounds</td>
+    <td class="num">High / Low</td>
+    <td class="num">Weather</td>
+  </tr>
+  <tr><td>Sat, Apr 18</td><td class="num">155</td><td class="num">41</td><td class="num">108</td><td class="num">59&deg; / 41&deg;</td><td class="num">Partly sunny</td></tr>
+  <tr><td>Sat, May 2</td><td class="num">110</td><td class="num">30</td><td class="num">77</td><td class="num">57&deg; / 46&deg;</td><td class="num">Mostly cloudy</td></tr>
+  <tr><td>Sun, May 3</td><td class="num">132</td><td class="num">56</td><td class="num">75</td><td class="num">54&deg; / 37&deg;</td><td class="num">Overcast</td></tr>
+  <tr><td>Sat, May 9</td><td class="num">79</td><td class="num">21</td><td class="num">57</td><td class="num">54&deg; / 34&deg;</td><td class="num">More clouds than sun</td></tr>
+  <tr><td>Sun, May 10</td><td class="num">163</td><td class="num">77</td><td class="num">82</td><td class="num">73&deg; / 50&deg;</td><td class="num">Partly sunny</td></tr>
+  <tr><td>Sat, May 16</td><td class="num">206</td><td class="num">50</td><td class="num">147</td><td class="num">78&deg; / 43&deg;</td><td class="num">Sunny</td></tr>
+  <tr><td>Sun, May 17</td><td class="num">217</td><td class="num">66</td><td class="num">149</td><td class="num">87&deg; / 57&deg;</td><td class="num">Partly sunny</td></tr>
+  <tr><td>Sat, May 23</td><td class="num">219</td><td class="num">43</td><td class="num">173</td><td class="num">65&deg; / 45&deg;</td><td class="num">Sunny</td></tr>
+  <tr><td>Sun, May 24</td><td class="num">47</td><td class="num">18</td><td class="num">28</td><td class="num">54&deg; / 52&deg;</td><td class="num">Light rain. Fog</td></tr>
+  <tr><td>Sat, May 30</td><td class="num">19</td><td class="num">8</td><td class="num">11</td><td class="num">57&deg; / 38&deg;</td><td class="num">Light rain. Fog</td></tr>
+  <tr><td>Sun, May 31</td><td class="num">182</td><td class="num">52</td><td class="num">130</td><td class="num">67&deg; / 35&deg;</td><td class="num">Light rain. Cloudy</td></tr>
+  <tr><td>Sat, Jun 6</td><td class="num">188</td><td class="num">31</td><td class="num">153</td><td class="num">84&deg; / 59&deg;</td><td class="num">Sunny</td></tr>
+  <tr><td>Sun, Jun 7</td><td class="num">198</td><td class="num">69</td><td class="num">127</td><td class="num">80&deg; / 58&deg;</td><td class="num">Partly sunny</td></tr>
+  <tr><td>Sat, Jun 13</td><td class="num">214</td><td class="num">54</td><td class="num">159</td><td class="num">87&deg; / 68&deg;</td><td class="num">Sunny</td></tr>
+  <tr><td>Sun, Jun 14</td><td class="num">197</td><td class="num">45</td><td class="num">147</td><td class="num">88&deg; / 60&deg;</td><td class="num">Sunny</td></tr>
+  <tr><td>Sat, Jun 20</td><td class="num">221</td><td class="num">45</td><td class="num">165</td><td class="num">78&deg; / 62&deg;</td><td class="num">Partly sunny</td></tr>
+  <tr><td>Sun, Jun 21</td><td class="num">246</td><td class="num">55</td><td class="num">190</td><td class="num">80&deg; / 56&deg;</td><td class="num">Scattered clouds</td></tr>
+  <tr><td>Sat, Jun 27</td><td class="num">240</td><td class="num">120</td><td class="num">120</td><td class="num">80&deg; / 64&deg;</td><td class="num">Partly sunny</td></tr>
+  <tr><td>Sun, Jun 28</td><td class="num">134</td><td class="num">14</td><td class="num">120</td><td class="num">82&deg; / 63&deg;</td><td class="num">Sunny</td></tr>
+  <tr><td>Sat, Jul 4</td><td class="num">98</td><td class="num">17</td><td class="num">80</td><td class="num">92&deg; / 72&deg;</td><td class="num">Scattered clouds</td></tr>
+  <tr><td>Sun, Jul 5</td><td class="num">185</td><td class="num">44</td><td class="num">139</td><td class="num">83&deg; / 65&deg;</td><td class="num">Passing clouds</td></tr>
+  <tr><td>Sat, Jul 11</td><td class="num">160</td><td class="num">33</td><td class="num">120</td><td class="num">82&deg; / 61&deg;</td><td class="num">Scattered clouds</td></tr>
+  <tr><td>Sun, Jul 12</td><td class="num">154</td><td class="num">44</td><td class="num">105</td><td class="num">82&deg; / 57&deg;</td><td class="num">Scattered clouds</td></tr>
+  <tr><td>Sat, Jul 18</td><td class="num">136</td><td class="num">15</td><td class="num">117</td><td class="num">81&deg; / 57&deg;</td><td class="num">Broken clouds</td></tr>
+
+  <tr class="section-gap"><td colspan="6">&nbsp;</td></tr>
+  <tr class="meta"><td colspan="6">Note: Saturday, June 27 (120 nine-hole rounds) and Sunday, June 28 (14) reflect the club's shotgun-format Invitational Tournament weekend, not typical member play &mdash; Saturday's field was split exactly 120/120 between 9- and 18-hole formats as part of the event, not organic day-to-day demand. Excluding that weekend, the season average is closer to 42 nine-hole rounds per date.</td></tr>
 </table>
 </div>
 </div>
